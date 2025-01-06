@@ -1,0 +1,173 @@
+using System;
+using System.Collections.Generic;
+
+class LabirentOyunu
+{
+    // Labirent boyutları
+    const int BOYUT = 8;
+    const char DUVAR = '#';
+    const char YOL = ' ';
+    const char OYUNCU = 'O';
+    const char CIKIS = 'X';
+
+    // Oyuncunun başlangıç konumu
+    static int oyuncuX = 1;
+    static int oyuncuY = 1;
+
+    // Çıkış noktası
+    static int cikisX = BOYUT - 2;
+    static int cikisY = BOYUT - 2;
+
+    // Skor ve adım analiz değişkenleri
+    static int adimSayisi = 0;
+    static List<string> izlenenYol = new List<string>();
+
+    // Labirent haritası
+    static char[,] labirent = new char[BOYUT, BOYUT];
+
+    static void Main()
+    {
+        // Oyunu başlat
+        OyunBaslat();
+    }
+
+    static void OyunBaslat()
+    {
+        while (true)
+        {
+            // Labirent ve oyuncu başlatma
+            LabirentOlustur();
+            oyuncuX = 1;
+            oyuncuY = 1;
+            adimSayisi = 0;
+            izlenenYol.Clear();
+
+            // Oyun döngüsü
+            while (true)
+            {
+                Console.Clear();
+                LabirentiCiz(); // Labirenti ekrana çiz
+                Console.WriteLine($"Adım Sayısı: {adimSayisi}");
+
+                // Kullanıcıdan yön al
+                ConsoleKeyInfo tus = Console.ReadKey();
+                if (!OyuncuyuHareketEttir(tus.Key)) break;
+
+                // Oyuncu çıkışa ulaştı mı?
+                if (oyuncuX == cikisX && oyuncuY == cikisY)
+                {
+                    Console.Clear();
+                    LabirentiCiz();
+                    Console.WriteLine("\nTebrikler! Oyunu Başarıyla Bitirdiniz.");
+                    Console.WriteLine($"Toplam Adım: {adimSayisi}");
+
+                    // Analiz ve yol gösterimi
+                    AnalizGoster();
+                    break;
+                }
+            }
+
+            // Tekrar oynamak için kullanıcıdan giriş alın
+            Console.WriteLine("\nTekrar oynamak için 'A' tuşuna basınız, çıkmak için başka bir tuşa basınız.");
+            if (Console.ReadKey().Key != ConsoleKey.A)
+                break;
+        }
+    }
+
+    // Labirent oluştur
+    static void LabirentOlustur()
+    {
+        for (int i = 0; i < BOYUT; i++)
+        {
+            for (int j = 0; j < BOYUT; j++)
+            {
+                // Kenarları duvar yap
+                if (i == 0 || j == 0 || i == BOYUT - 1 || j == BOYUT - 1)
+                    labirent[i, j] = DUVAR;
+                else
+                    labirent[i, j] = YOL; // Yol oluştur
+            }
+        }
+
+        // Çıkış noktasını yerleştir
+        labirent[cikisX, cikisY] = CIKIS;
+    }
+
+    // Labirenti çiz
+    static void LabirentiCiz()
+    {
+        for (int i = 0; i < BOYUT; i++)
+        {
+            for (int j = 0; j < BOYUT; j++)
+            {
+                if (i == oyuncuX && j == oyuncuY)
+                    Console.Write(OYUNCU); // Oyuncuyu çiz
+                else
+                    Console.Write(labirent[i, j]); // Diğer bölümleri çiz
+            }
+            Console.WriteLine();
+        }
+    }
+
+    // Oyuncuyu hareket ettir
+    static bool OyuncuyuHareketEttir(ConsoleKey tus)
+    {
+        int yeniX = oyuncuX;
+        int yeniY = oyuncuY;
+
+        // Yönlere göre oyuncunun hareketi
+        switch (tus)
+        {
+            case ConsoleKey.UpArrow:
+                yeniX--;
+                break;
+            case ConsoleKey.DownArrow:
+                yeniX++;
+                break;
+            case ConsoleKey.LeftArrow:
+                yeniY--;
+                break;
+            case ConsoleKey.RightArrow:
+                yeniY++;
+                break;
+            case ConsoleKey.Escape:
+                return false; // Çıkış
+        }
+
+        // Geçerli hareket kontrolü (duvara çarpma kontrolü)
+        if (labirent[yeniX, yeniY] != DUVAR)
+        {
+            oyuncuX = yeniX;
+            oyuncuY = yeniY;
+            adimSayisi++;
+
+            // İzlenen yolu kaydet
+            izlenenYol.Add($"({oyuncuX}, {oyuncuY})");
+        }
+
+        return true;
+    }
+
+    // Analiz ve izlenen yolu göster
+    static void AnalizGoster()
+    {
+        Console.WriteLine("\nAdım Analizi:");
+        for (int i = 0; i < izlenenYol.Count; i++)
+        {
+            Console.WriteLine($"Adım {i + 1}: {izlenenYol[i]}");
+        }
+
+        Console.WriteLine("\nİzlenen Yol Haritası:");
+        for (int i = 0; i < BOYUT; i++)
+        {
+            for (int j = 0; j < BOYUT; j++)
+            {
+                if (izlenenYol.Contains($"({i}, {j})"))
+                    Console.Write('*'); // İzlenen yolları yıldızla göster
+                else
+                    Console.Write(labirent[i, j]);
+            }
+            Console.WriteLine();
+        }
+    }
+}
